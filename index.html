@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootflat.min.css" />
+    <title>Find it Now!</title>
+    <style>
+    	.no-pad{
+    		padding: 0;
+    	}
+    	.input-group-addon {
+    		color : #434A54;
+    		background-color: #FECE54;
+    	}
+    </style>
+</head>
+
+<body>
+    
+      <ul class="nav nav-tabs">
+        	<li class="active col-xs-4 no-pad text-center"><a href="#inputBox" data-toggle="tab">Enter Input</a></li>
+        	<li class="col-xs-4 no-pad text-center"><a href="#outputTableBox" data-toggle="tab">See Output</a></li>
+        	<li class="col-xs-4 no-pad text-center"><a href="#graphBox" data-toggle="tab">See Graph</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane fade active in" id="inputBox">
+          	<form id="inputForm">
+          		<div class="form-group">
+          			<label class="sr-only" for="exampleInputAmount">Tn(infinite)</label>
+					    <div class="input-group">
+					      <div class="input-group-addon">T<sub>n</sub>(&#x221e;)</div>
+					      <input type="text" class="form-control" id="tn" placeholder="Enter Tn Infinite" required="">
+					      <div class="input-group-addon">(K)</div>
+					    </div>
+          		</div>
+          		<div class="form-group">
+          			<label class="sr-only" for="exampleInputAmount">Sub(Vib)</label>
+					    <div class="input-group">
+					      <div class="input-group-addon">Sub(V<sub>i</sub>b)</div>
+					      <input type="text" class="form-control" id="sub" placeholder="Enter Sub(Vib)" required="">
+					      <div class="input-group-addon">(J)</div>
+					    </div>
+          		</div>
+          		<div class="form-group">
+          			<label class="sr-only" for="exampleInputAmount">R</label>
+					    <div class="input-group">
+					      <div class="input-group-addon">R</div>
+					      <input type="text" class="form-control" id="rValue" placeholder="Enter R" required="">
+					    </div>
+          		</div>
+          		<div class="form-group">
+          			<label class="sr-only" for="exampleInputAmount">h</label>
+					    <div class="input-group">
+					      <div class="input-group-addon">h</div>
+					      <input type="text" class="form-control" id="hValue" placeholder="Enter h" required="">
+					      <div class="input-group-addon">(nm)</div>
+					    </div>
+          		</div>
+          		<div class="form-group">
+          			<label class="sr-only" for="">r</label>
+					    <div class="input-group">
+					      <div class="input-group-addon">Enter range of r</div>
+					      	<input type="text" class="form-control" id="rRange" required>
+					      	<div class="input-group-addon">(for e.g 1-20)</div>
+					    </div>
+          		</div>
+          		<div class="form-group text-center">
+          			<button type="submit" class="btn btn-warning">COMPUTE</button>
+          		</div>
+          	</form>
+        </div>
+        <div class="tab-pane fade" id="outputTableBox">
+          	  <h3>Output Table</h3>
+			  <p>Output table is shown according to variable value of r0(because of d):</p>
+			  <table class="table table-hover">
+			    <thead>
+			      <tr>
+			        <th>T<sub>n</sub>(&#x221e;)</th>
+			        <th>r</th>
+			        <th>d</th>
+			      </tr>
+			    </thead>
+			    <tbody id="tableDataBox">
+			    </tbody>
+			  </table>
+        </div>
+        <div class="tab-pane fade" id="graphBox">
+          	<div id="chartBox">
+          	</div>
+        </div>
+      </div>
+    <script type="text/javascript" src="js/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/icheck.min.js"></script>
+    <script type="text/javascript" src="js/jquery.fs.selecter.min.js"></script>
+    <script type="text/javascript" src="js/jquery.fs.stepper.min.js"></script>
+    <script type="text/javascript" src="js/highcharts.js"></script>
+    <script type="text/javascript">
+    	var d0 = {
+    		'name' : 'd=0',
+    		'data' : []
+    	};
+    	var d1 = {
+    		'name' : 'd=1',
+    		'data' : []
+    	};
+    	var d2 = {
+    		'name' : 'd=2',
+    		'data' : []
+    	};
+    	var cats = [];
+    	$(document).ready(function() {
+    		$('#inputForm').on('submit', function(e) {
+    			e.preventDefault();
+    			removeErrorMessages();
+    			var tn = $('#tn').val();
+		    	var sub = $('#sub').val();
+		    	var R = $('#rValue').val();
+		    	var h = $('#hValue').val();
+		    	var rRange = $('#rRange').val().split("-");
+		    	var r1 = parseInt(rRange[0]);
+		    	var r2 = parseInt(rRange[1]);
+		    	
+		    	if(isNaN(tn)) {
+		    		//invalid tn
+		    		$('#tn').parent().parent().addClass('has-error');
+		    		return;
+		    	}
+		    	if(isNaN(sub)) {
+		    		//invalid sub
+		    		$('#sub').parent().parent().addClass('has-error');
+		    		return;
+		    	}
+		    	if(isNaN(R)) {
+		    		//invalid R
+		    		$('#rValue').parent().parent().addClass('has-error');
+		    		return;
+		    	}
+		    	if(isNaN(h)) {
+		    		//invalid h
+		    		$('#hValue').parent().parent().addClass('has-error');
+		    		return;
+		    	}
+		    	if(isNaN(r1) || isNaN(r2) || r2 == '' || r1 == '' || r1>r2) {
+		    		console.log('initial-scale' + r1 + r2);
+		    		//invalid range
+		    		$('#rRange').parent().parent().addClass('has-error');
+		    		return;
+		    	}
+		    	for(var x = r1; x <= r2; x++) {
+		    		cats.push(x);
+		    	}
+		    	d0.data = [];
+	    		d1.data = [];
+	    		d2.data = [];
+		    	compute(tn,sub,R,h,r1,r2,0);
+		    	compute(tn,sub,R,h,r1,r2,1);
+		    	compute(tn,sub,R,h,r1,r2,2);
+		    	fillData(r1,r2);
+		    	makeChart();
+    		});
+    	});
+    	function removeErrorMessages() {
+    		$('#hValue').parent().parent().removeClass('has-error');
+    		$('#sub').parent().parent().removeClass('has-error');
+			$('#rValue').parent().parent().removeClass('has-error');
+			$('#rRange').parent().parent().removeClass('has-error');
+			$('#tn').parent().parent().removeClass('has-error');
+    	}
+    	function compute(tn,sub,R,h,r1,r2,d) {
+    		var c1 = 1;
+    		var r0 = c1 * (3 - d) * h;
+    		for(var cnt = r1; cnt <= r2; cnt++) {
+    			var result = tn * Math.exp((-2 * sub)/( 3 * R *((cnt / r0) - 1)));
+    			if(d == 0)
+    				d0.data.push(result);
+    			else if(d == 1)
+    				d1.data.push(result);
+    			else if(d == 2)
+    				d2.data.push(result);
+    		}
+    	}
+    	function fillData(r1,r2) {
+    		$('#tableDataBox').html('');
+    		for(var i=r1,j=0 ; i <= r2 ; i++,j++) {
+    			$('#tableDataBox').append(getSingleRow(i,j,0));
+    			$('#tableDataBox').append(getSingleRow(i,j,1));
+    			$('#tableDataBox').append(getSingleRow(i,j,2));
+    		}
+    	}
+    	function getSingleRow(i,j,d) {
+    		var tempD;
+    		if(d == 0)
+    			tempD = d0;
+    		else if(d == 1)
+    			tempD = d1;
+    		else if(d == 2)
+    			tempD = d2;
+    		return  '<tr>' 
+			        + '<td>' + tempD.data[j] + '</th>'
+			        + '<td>' + i + '</td>'
+			        + '<td>' + d + '</td>'
+			      + '</tr>';
+    	}
+    	function makeChart() {
+    		$('#chartBox').html('');
+    		$('#chartBox').highcharts({
+		        title: {
+		            text: 'Temperature vs Radius',
+		            x: -20 //center
+		        },
+		        subtitle: {
+		            text: '',
+		            x: -20
+		        },
+		        xAxis: {
+		            //categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+		             //   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+	                categories: cats
+		        },
+		        yAxis: {
+		            title: {
+		                text: 'Temperature (K)'
+		            },
+		            plotLines: [{
+		                value: 0,
+		                width: 1,
+		                color: '#808080'
+		            }]
+		        },
+		        tooltip: {
+		            valueSuffix: 'K'
+		        },
+		        legend: {
+		            layout: 'vertical',
+		            align: 'right',
+		            verticalAlign: 'middle',
+		            borderWidth: 0
+		        },
+		        series: [{
+		            name: 'd = 0',
+		           // data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6]
+		           data : d0.data
+		        }, {
+		            name: 'd = 1',
+		            //data: [-0.2, 0.8, 5.7, 11.3, 17.0, 22.0, 24.8, 24.1, 20.1, 14.1, 8.6, 2.5]
+		            data : d1.data
+		        }, {
+		            name: 'd = 2',
+		            //data: [-0.9, 0.6, 3.5, 8.4, 13.5, 17.0, 18.6, 17.9, 14.3, 9.0, 3.9, 1.0]
+		            data : d2.data
+		        }]
+		    });
+    	}
+    </script>
+</body>
+
+</html>
